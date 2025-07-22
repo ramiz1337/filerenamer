@@ -1,0 +1,14 @@
+D:\Dropbox\tmp\projektRenamer\renamerIdee\renamerIdee\bin\Debug\renamerIdee.exe.config
+D:\Dropbox\tmp\projektRenamer\renamerIdee\renamerIdee\bin\Debug\renamerIdee.exe
+D:\Dropbox\tmp\projektRenamer\renamerIdee\renamerIdee\bin\Debug\renamerIdee.pdb
+D:\Dropbox\tmp\projektRenamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.csproj.AssemblyReference.cache
+D:\Dropbox\tmp\projektRenamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.csproj.CoreCompileInputs.cache
+D:\Dropbox\tmp\projektRenamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.exe
+D:\Dropbox\tmp\projektRenamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.pdb
+C:\Users\ramiz.pashaiev\Downloads\renamerIdee\renamerIdee\renamerIdee\bin\Debug\renamerIdee.exe.config
+C:\Users\ramiz.pashaiev\Downloads\renamerIdee\renamerIdee\renamerIdee\bin\Debug\renamerIdee.exe
+C:\Users\ramiz.pashaiev\Downloads\renamerIdee\renamerIdee\renamerIdee\bin\Debug\renamerIdee.pdb
+C:\Users\ramiz.pashaiev\Downloads\renamerIdee\renamerIdee\renamerIdee\obj\Debug\renamerIdee.csproj.AssemblyReference.cache
+C:\Users\ramiz.pashaiev\Downloads\renamerIdee\renamerIdee\renamerIdee\obj\Debug\renamerIdee.csproj.CoreCompileInputs.cache
+C:\Users\ramiz.pashaiev\Downloads\renamerIdee\renamerIdee\renamerIdee\obj\Debug\renamerIdee.exe
+C:\Users\ramiz.pashaiev\Downloads\renamerIdee\renamerIdee\renamerIdee\obj\Debug\renamerIdee.pdb
