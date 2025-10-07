@@ -19,3 +19,10 @@ C:\Users\ramiz.pashaiev\Desktop\filerenamer\renamerIdee\renamerIdee\obj\Debug\re
 C:\Users\ramiz.pashaiev\Desktop\filerenamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.csproj.CoreCompileInputs.cache
 C:\Users\ramiz.pashaiev\Desktop\filerenamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.exe
 C:\Users\ramiz.pashaiev\Desktop\filerenamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.pdb
+C:\Users\schommer\Desktop\filerenamer\renamerIdee\renamerIdee\bin\Debug\renamerIdee.exe.config
+C:\Users\schommer\Desktop\filerenamer\renamerIdee\renamerIdee\bin\Debug\renamerIdee.exe
+C:\Users\schommer\Desktop\filerenamer\renamerIdee\renamerIdee\bin\Debug\renamerIdee.pdb
+C:\Users\schommer\Desktop\filerenamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.csproj.AssemblyReference.cache
+C:\Users\schommer\Desktop\filerenamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.csproj.CoreCompileInputs.cache
+C:\Users\schommer\Desktop\filerenamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.exe
+C:\Users\schommer\Desktop\filerenamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.pdb
