@@ -1,113 +1,180 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
-namespace renamerIdee {
-    class Matcher {
-        static string VERSION = "V1.0";
+namespace renamerIdee
+{
+    class Matcher
+    {
+        static string VERSION = "V2.4";
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="oldName">old pattern</param>
-        /// <param name="newName">new pattern</param>
-        /// <param name="files">List of filenames</param>
-        /// <returns>List of changed filenames</returns>
-        public static List<string> matcher(string oldName, string newName, List<string> files)
+        public static void RenameFilesInFolder(string folderPath, string oldName, string newName)
         {
-            if (!oldName.Contains("*"))
+            if (!Directory.Exists(folderPath))
             {
-                // Exact match mode
-                for (int i = 0; i < files.Count; i++)
-                {
-                    if (files[i] == oldName)
-                    {
-                        files[i] = newName;
-                    }
-                }
-                return files;
-            }
-
-            // Wildcard mode
-            string[] oldParts = oldName.Split('*');
-            string oldPrefix = oldParts[0];
-            string oldSuffix = oldParts.Length > 1 ? oldParts[1] : "";
-
-            string[] newParts = newName.Split('*');
-            string newPrefix = newParts[0];
-            string newSuffix = newParts.Length > 1 ? newParts[1] : "";
-
-            for (int i = 0; i < files.Count; i++)
-            {
-                string file = files[i];
-
-                if (file.StartsWith(oldPrefix) && file.EndsWith(oldSuffix))
-                {
-                    string middle = file.Substring(oldPrefix.Length, file.Length - oldPrefix.Length - oldSuffix.Length);
-                    files[i] = newPrefix + middle + newSuffix;
-                }
-            }
-
-            return files;
-        }
-
-
-        static void runTests() {
-            Console.WriteLine("Run All Matcher Tests");
-            string oldP ="", newP= "", res="";
-            string[] files1 = {"clipboard01.jpg", "clipboard02.jpg", "clipboard03.jpg",
-                               "clipboard01.gif", "img-1.jpg", "img-abc.jpg" };
-
-            oldP = "img-1.*";
-            newP = "1-img.*";
-            /*res = "board01.jpg board02.jpg board03.jpg clipboard01.gif img01.jpg img-abc.jpg";*/
-            test(files1, oldP, newP, res);
-            
-            /*
-            oldP = "clipboard01.jpg";
-            newP = "aaa-clipboard01.jpg";
-            res = "aaa-01.jpg aaa-02.jpg aaa-03.jpg aaa-clipboard01.gif aaa-img01.jpg aaa-img-abc.jpg";
-            test(files1, oldP, newP, res);
-            */
-
-            Console.BackgroundColor = ConsoleColor.Green;
-            Console.WriteLine("All tests succeeded!");
-            Console.BackgroundColor = ConsoleColor.Black;
-            Console.ReadKey();
-
-        }
-
-        private static void test(string[] files, string oldName, string newName, string testRes = null) {
-            Console.WriteLine($"oldName:{oldName} newName: {newName}");
-            List<string> res = matcher(oldName, newName, new List<string>(files));
-            string resS = string.Join(" ", res);
-            Console.WriteLine("Old:" + string.Join(" ", new List<string>(files)));
-            Console.WriteLine("New:" + resS);
-            Console.WriteLine("--------------------------------------------------");
-            /*if (testRes != null && resS != testRes) {
-                throw new Exception("Test failed: expected:" + testRes + " received:" + resS);
-            }*/
-        }
-
-
-        public static void Main(string[] args) {
-            int RUN_DEBUG = 1;
-
-            if (RUN_DEBUG == 1) {
-                runTests();
-                Console.ReadKey();
+                Console.WriteLine("❌ Folder does not exist!");
                 return;
             }
 
-            //
-            // work on matcher...
-            //
+            var files = Directory.GetFiles(folderPath).OrderBy(f => f).ToList();
 
-            Console.WriteLine("ToDo: current work on matcher...");
-            Console.ReadKey();
+            // --- Convert old pattern to regex (wildcards * → match anything) ---
+            string escaped = Regex.Escape(oldName);
+            string regexPattern = escaped.Replace("\\*", "(.*?)");
+
+            // Only anchor if pattern clearly defines start or end
+            if (!oldName.StartsWith("*"))
+                regexPattern = "^" + regexPattern;
+            if (!oldName.EndsWith("*"))
+                regexPattern = regexPattern + "$";
+
+            Regex regex = new Regex(regexPattern, RegexOptions.IgnoreCase);
+
+            // Replacement pattern setup
+            int starIndex = 1;
+            string replacementPattern = Regex.Replace(newName, "\\*", m => $"{{{starIndex++}}}");
+
+            var matchedFiles = new List<(string oldPath, string newPath)>();
+
+            // --- Try to match files ---
+            foreach (var file in files)
+            {
+                string fileName = Path.GetFileName(file);
+                string dir = Path.GetDirectoryName(file);
+
+                Match match = regex.Match(fileName);
+                if (match.Success)
+                {
+                    string newFileName = replacementPattern;
+
+                    // Replace * with captured text
+                    for (int g = 1; g < match.Groups.Count; g++)
+                        newFileName = newFileName.Replace("{" + g + "}", match.Groups[g].Value);
+
+                    matchedFiles.Add((file, Path.Combine(dir, newFileName)));
+                }
+            }
+
+            // --- Handle sequential renumbering ---
+            if (oldName.Contains("*") && !newName.Contains("*"))
+            {
+                int startNum = ExtractFirstNumber(newName) ?? 1;
+                int counter = startNum;
+                var updated = new List<(string oldPath, string newPath)>();
+
+                foreach (var (oldPath, _) in matchedFiles)
+                {
+                    string dir = Path.GetDirectoryName(oldPath);
+                    string ext = Path.GetExtension(oldPath);
+
+                    // Remove any leading numbers or dash from the newName base
+                    string baseName = Path.GetFileNameWithoutExtension(newName);
+                    baseName = Regex.Replace(baseName, @"^\d+\-?", ""); // e.g. "1-test" -> "test"
+
+                    string newFileName = $"{counter++}-{baseName}{ext}";
+                    updated.Add((oldPath, Path.Combine(dir, newFileName)));
+                }
+
+                matchedFiles = updated;
+            }
+
+            // --- Handle case: no matches ---
+            if (matchedFiles.Count == 0)
+            {
+                Console.WriteLine("⚠️  No files matched the pattern.");
+                Console.WriteLine($"   (regex used: {regexPattern})");
+                Console.WriteLine("   Existing files:");
+                foreach (var f in files)
+                    Console.WriteLine("     - " + Path.GetFileName(f));
+                return;
+            }
+
+            // --- Preview changes ---
+            Console.WriteLine("\nPreview of changes:");
+            foreach (var (oldPath, newPath) in matchedFiles)
+                Console.WriteLine($"  {Path.GetFileName(oldPath)}  →  {Path.GetFileName(newPath)}");
+
+            Console.Write("\nApply these changes? (Y/N): ");
+            string answer = Console.ReadLine().Trim().ToUpper();
+
+            if (answer == "Y")
+            {
+                // Temporary renaming to avoid conflicts
+                foreach (var (oldPath, newPath) in matchedFiles)
+                {
+                    string tempPath = newPath + ".tmp";
+                    File.Move(oldPath, tempPath);
+                }
+
+                foreach (var (oldPath, newPath) in matchedFiles)
+                {
+                    string tempPath = newPath + ".tmp";
+                    File.Move(tempPath, newPath);
+                    Console.WriteLine($"✅ {Path.GetFileName(oldPath)} → {Path.GetFileName(newPath)}");
+                }
+
+                Console.WriteLine("\n🎉 All files renamed successfully!");
+            }
+            else
+            {
+                Console.WriteLine("❌ Operation cancelled.");
+            }
         }
 
+        static int? ExtractFirstNumber(string input)
+        {
+            var m = Regex.Match(input, @"\d+");
+            if (m.Success && int.TryParse(m.Value, out int val))
+                return val;
+            return null;
+        }
+
+        public static void Main(string[] args)
+        {
+            Console.WriteLine("==============================================");
+            Console.WriteLine($"     Ultimate File Renamer (version {VERSION})");
+            Console.WriteLine("==============================================\n");
+
+            while (true)
+            {
+                Console.Write("Enter folder path containing files (or 'exit' to quit):\n>> ");
+                string folder = Console.ReadLine();
+
+                if (folder.Equals("exit", StringComparison.OrdinalIgnoreCase))
+                    break;
+
+                if (!Directory.Exists(folder))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("❌ Folder does not exist. Try again.\n");
+                    Console.ResetColor();
+                    continue;
+                }
+
+                var files = Directory.GetFiles(folder);
+                Console.WriteLine($"\n📂 Found {files.Length} file(s):");
+                foreach (var f in files)
+                    Console.WriteLine("   - " + Path.GetFileName(f));
+
+                Console.Write("\n🔤 OLD filename pattern (use * as wildcard):\n>> ");
+                string oldPattern = Console.ReadLine();
+
+                Console.Write("🆕 NEW filename pattern (use * as wildcard or number start):\n>> ");
+                string newPattern = Console.ReadLine();
+
+                RenameFilesInFolder(folder, oldPattern, newPattern);
+
+                Console.WriteLine("\nOptions: (R)ename again | (C)hange folder | (E)xit");
+                Console.Write(">> ");
+                string option = Console.ReadLine().Trim().ToUpper();
+
+                if (option == "E") break;
+                if (option == "C") continue;
+            }
+
+            Console.WriteLine("\n👋 Goodbye!");
+        }
     }
 }
