@@ -1,36 +1,61 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace renamerIdee {
-    class Program {
-        static void Main1(string[] args) {
-            int RUN_DEBUG = 1;
+namespace renamerIdee
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("==============================================");
+            Console.WriteLine("     Ultimate File Renamer (version V2.7)");
+            Console.WriteLine("==============================================\n");
 
-            if (RUN_DEBUG == 1) {
-                Console.WriteLine("Run All Tests");
-                Console.WriteLine("ToDo: Tests with real files in directories...");
-                //runTests(); 
-                Console.ReadKey();
-                return;
+            string currentFolder = null;
+
+            while (true)
+            {
+                if (string.IsNullOrEmpty(currentFolder))
+                    currentFolder = UserInterface.AskFolder();
+
+                if (currentFolder == null) break;
+
+                UserInterface.ShowFiles(currentFolder);
+
+                Console.WriteLine("\nOptions:");
+                Console.WriteLine("  (R) Rename using pattern");
+                Console.WriteLine("  (S) Single file rename");
+                Console.WriteLine("  (C) Change folder");
+                Console.WriteLine("  (E) Exit");
+                Console.WriteLine("\n💡 Tip: To remove everything before the first '-', choose 'R' and type REMOVE_PREFIX as OLD pattern.");
+                Console.Write(">> ");
+                string option = Console.ReadLine().Trim().ToUpper();
+
+                if (option == "E") break;
+                if (option == "C") { currentFolder = null; continue; }
+
+                if (option == "S")
+                {
+                    Console.Write("\nEnter exact file name to rename:\n>> ");
+                    string fileToRename = Console.ReadLine();
+
+                    Console.Write("Enter new name for this file:\n>> ");
+                    string newName = Console.ReadLine();
+
+                    string fullPath = System.IO.Path.Combine(currentFolder, fileToRename);
+                    FileRenamer.RenameSingleFile(fullPath, newName);
+                    continue;
+                }
+
+                if (option == "R")
+                {
+                    var oldPattern = UserInterface.AskOldPattern();
+                    var newPattern = UserInterface.AskNewPattern();
+
+                    FileRenamer.RenameFilesInFolder(currentFolder, oldPattern, newPattern);
+                }
             }
 
-            if (RUN_DEBUG == 2) {
-                Console.WriteLine("Run Matcher Main Method");
-                //Matcher.Main1(null);
-                Console.ReadKey();
-                return;
-            }
-
-
-            //
-            //run real renamer 
-            //
-            //...
-            Console.WriteLine("ToDo: running renamer...");
-            Console.ReadKey();
+            Console.WriteLine("\n👋 Goodbye!");
         }
     }
 }

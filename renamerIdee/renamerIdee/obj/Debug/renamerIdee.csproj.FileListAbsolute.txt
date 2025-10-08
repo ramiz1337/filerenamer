@@ -26,3 +26,11 @@ C:\Users\schommer\Desktop\filerenamer\renamerIdee\renamerIdee\obj\Debug\renamerI
 C:\Users\schommer\Desktop\filerenamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.csproj.CoreCompileInputs.cache
 C:\Users\schommer\Desktop\filerenamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.exe
 C:\Users\schommer\Desktop\filerenamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.pdb
+C:\Users\projektleitung\Desktop\Collabs\File Renamer\renamerIdee\renamerIdee\bin\Debug\renamerIdee.exe.config
+C:\Users\projektleitung\Desktop\Collabs\File Renamer\renamerIdee\renamerIdee\bin\Debug\renamerIdee.exe
+C:\Users\projektleitung\Desktop\Collabs\File Renamer\renamerIdee\renamerIdee\bin\Debug\renamerIdee.pdb
+C:\Users\projektleitung\Desktop\Collabs\File Renamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.csproj.AssemblyReference.cache
+C:\Users\projektleitung\Desktop\Collabs\File Renamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.exe.config
+C:\Users\projektleitung\Desktop\Collabs\File Renamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.csproj.CoreCompileInputs.cache
+C:\Users\projektleitung\Desktop\Collabs\File Renamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.exe
+C:\Users\projektleitung\Desktop\Collabs\File Renamer\renamerIdee\renamerIdee\obj\Debug\renamerIdee.pdb
