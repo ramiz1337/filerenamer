@@ -33,7 +33,10 @@ namespace renamerIdee
 
 		public static string AskOldPattern()
 		{
-			Console.Write("\n🔤 OLD filename pattern (use * as wildcard):\n>> ");
+			Console.WriteLine("\n🔤 OLD filename pattern (use * as wildcard)");
+			Console.WriteLine("    Example: art-*  → matches art-1, art-2, etc.");
+			Console.WriteLine("    Special option: type REMOVE_PREFIX to remove everything before the first '-' in file names");
+			Console.Write(">> ");
 			return Console.ReadLine();
 		}
 

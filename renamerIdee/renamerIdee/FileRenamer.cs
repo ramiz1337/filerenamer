@@ -43,5 +43,35 @@ namespace renamerIdee
 
 			Console.WriteLine("\n🎉 All files renamed successfully!");
 		}
+
+		public static void RenameSingleFile(string filePath, string newName)
+		{
+			if (!File.Exists(filePath))
+			{
+				Console.WriteLine("❌ File does not exist.");
+				return;
+			}
+
+			string dir = Path.GetDirectoryName(filePath);
+			string newPath = Path.Combine(dir, newName);
+
+			if (File.Exists(newPath))
+			{
+				Console.WriteLine("❌ A file with that name already exists.");
+				return;
+			}
+
+			Console.WriteLine($"\nPreview: {Path.GetFileName(filePath)} → {newName}");
+			Console.Write("Apply this change? (Y/N): ");
+			if (Console.ReadLine().Trim().ToUpper() == "Y")
+			{
+				File.Move(filePath, newPath);
+				Console.WriteLine($"✅ {Path.GetFileName(filePath)} → {newName}");
+			}
+			else
+			{
+				Console.WriteLine("❌ Operation cancelled.");
+			}
+		}
 	}
 }
