@@ -8,7 +8,7 @@ namespace renamerIdee
 {
     class Matcher
     {
-        static string VERSION = "V2.4";
+        static string VERSION = "V2.7";
 
         public static void RenameFilesInFolder(string folderPath, string oldName, string newName)
         {
@@ -20,11 +20,9 @@ namespace renamerIdee
 
             var files = Directory.GetFiles(folderPath).OrderBy(f => f).ToList();
 
-            // --- Convert old pattern to regex (wildcards * → match anything) ---
             string escaped = Regex.Escape(oldName);
             string regexPattern = escaped.Replace("\\*", "(.*?)");
 
-            // Only anchor if pattern clearly defines start or end
             if (!oldName.StartsWith("*"))
                 regexPattern = "^" + regexPattern;
             if (!oldName.EndsWith("*"))
@@ -32,13 +30,11 @@ namespace renamerIdee
 
             Regex regex = new Regex(regexPattern, RegexOptions.IgnoreCase);
 
-            // Replacement pattern setup
             int starIndex = 1;
             string replacementPattern = Regex.Replace(newName, "\\*", m => $"{{{starIndex++}}}");
 
             var matchedFiles = new List<(string oldPath, string newPath)>();
 
-            // --- Try to match files ---
             foreach (var file in files)
             {
                 string fileName = Path.GetFileName(file);
@@ -48,8 +44,6 @@ namespace renamerIdee
                 if (match.Success)
                 {
                     string newFileName = replacementPattern;
-
-                    // Replace * with captured text
                     for (int g = 1; g < match.Groups.Count; g++)
                         newFileName = newFileName.Replace("{" + g + "}", match.Groups[g].Value);
 
@@ -57,8 +51,10 @@ namespace renamerIdee
                 }
             }
 
-            // --- Handle sequential renumbering ---
-            if (oldName.Contains("*") && !newName.Contains("*"))
+            if (oldName.Contains("*") &&
+                !newName.Contains("*") &&
+                !newName.Contains("[a]") &&
+                !newName.Contains("[A]"))
             {
                 int startNum = ExtractFirstNumber(newName) ?? 1;
                 int counter = startNum;
@@ -68,19 +64,51 @@ namespace renamerIdee
                 {
                     string dir = Path.GetDirectoryName(oldPath);
                     string ext = Path.GetExtension(oldPath);
-
-                    // Remove any leading numbers or dash from the newName base
                     string baseName = Path.GetFileNameWithoutExtension(newName);
-                    baseName = Regex.Replace(baseName, @"^\d+\-?", ""); // e.g. "1-test" -> "test"
 
-                    string newFileName = $"{counter++}-{baseName}{ext}";
+                    if (Regex.IsMatch(baseName, @"\d+"))
+                        baseName = Regex.Replace(baseName, @"\d+", counter.ToString());
+                    else
+                        baseName = $"{baseName}{counter}";
+
+                    string newFileName = $"{baseName}{ext}";
                     updated.Add((oldPath, Path.Combine(dir, newFileName)));
+                    counter++;
                 }
 
                 matchedFiles = updated;
             }
 
-            // --- Handle case: no matches ---
+            for (int i = 0; i < matchedFiles.Count; i++)
+            {
+                string oldFile = Path.GetFileNameWithoutExtension(matchedFiles[i].oldPath);
+                string newFile = Path.GetFileNameWithoutExtension(matchedFiles[i].newPath);
+                string ext = Path.GetExtension(matchedFiles[i].oldPath);
+                string dir = Path.GetDirectoryName(matchedFiles[i].oldPath);
+
+                bool lowercasePattern = newName.Contains("[a]");
+                bool uppercasePattern = newName.Contains("[A]");
+
+                if (lowercasePattern || uppercasePattern)
+                {
+                    var numMatch = Regex.Match(oldFile, @"(\d+)");
+                    if (numMatch.Success)
+                    {
+                        int num = int.Parse(numMatch.Groups[1].Value);
+                        if (num >= 1 && num <= 26)
+                        {
+                            char letter = (char)((lowercasePattern ? 'a' : 'A') + num - 1);
+                            string baseName = newFile
+                                .Replace("[a]", letter.ToString())
+                                .Replace("[A]", letter.ToString());
+
+                            string newPath = Path.Combine(dir, baseName + ext);
+                            matchedFiles[i] = (matchedFiles[i].oldPath, newPath);
+                        }
+                    }
+                }
+            }
+
             if (matchedFiles.Count == 0)
             {
                 Console.WriteLine("⚠️  No files matched the pattern.");
@@ -91,7 +119,6 @@ namespace renamerIdee
                 return;
             }
 
-            // --- Preview changes ---
             Console.WriteLine("\nPreview of changes:");
             foreach (var (oldPath, newPath) in matchedFiles)
                 Console.WriteLine($"  {Path.GetFileName(oldPath)}  →  {Path.GetFileName(newPath)}");
@@ -101,7 +128,6 @@ namespace renamerIdee
 
             if (answer == "Y")
             {
-                // Temporary renaming to avoid conflicts
                 foreach (var (oldPath, newPath) in matchedFiles)
                 {
                     string tempPath = newPath + ".tmp";
@@ -137,23 +163,30 @@ namespace renamerIdee
             Console.WriteLine($"     Ultimate File Renamer (version {VERSION})");
             Console.WriteLine("==============================================\n");
 
+            string currentFolder = null;
+
             while (true)
             {
-                Console.Write("Enter folder path containing files (or 'exit' to quit):\n>> ");
-                string folder = Console.ReadLine();
-
-                if (folder.Equals("exit", StringComparison.OrdinalIgnoreCase))
-                    break;
-
-                if (!Directory.Exists(folder))
+                if (string.IsNullOrEmpty(currentFolder))
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("❌ Folder does not exist. Try again.\n");
-                    Console.ResetColor();
-                    continue;
+                    Console.Write("Enter folder path containing files (or 'exit' to quit):\n>> ");
+                    string folder = Console.ReadLine();
+
+                    if (folder.Equals("exit", StringComparison.OrdinalIgnoreCase))
+                        break;
+
+                    if (!Directory.Exists(folder))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("❌ Folder does not exist. Try again.\n");
+                        Console.ResetColor();
+                        continue;
+                    }
+
+                    currentFolder = folder;
                 }
 
-                var files = Directory.GetFiles(folder);
+                var files = Directory.GetFiles(currentFolder);
                 Console.WriteLine($"\n📂 Found {files.Length} file(s):");
                 foreach (var f in files)
                     Console.WriteLine("   - " + Path.GetFileName(f));
@@ -161,17 +194,22 @@ namespace renamerIdee
                 Console.Write("\n🔤 OLD filename pattern (use * as wildcard):\n>> ");
                 string oldPattern = Console.ReadLine();
 
-                Console.Write("🆕 NEW filename pattern (use * as wildcard or number start):\n>> ");
+                Console.Write("🆕 NEW filename pattern (use * as wildcard, or [a]/[A] for ASCII letters):\n>> ");
                 string newPattern = Console.ReadLine();
 
-                RenameFilesInFolder(folder, oldPattern, newPattern);
+                RenameFilesInFolder(currentFolder, oldPattern, newPattern);
 
                 Console.WriteLine("\nOptions: (R)ename again | (C)hange folder | (E)xit");
                 Console.Write(">> ");
                 string option = Console.ReadLine().Trim().ToUpper();
 
                 if (option == "E") break;
-                if (option == "C") continue;
+                if (option == "C")
+                {
+                    currentFolder = null;
+                    continue;
+                }
+                // If R → keep currentFolder and repeat
             }
 
             Console.WriteLine("\n👋 Goodbye!");

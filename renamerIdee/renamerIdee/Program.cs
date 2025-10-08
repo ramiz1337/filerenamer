@@ -1,36 +1,39 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace renamerIdee {
-    class Program {
-        static void Main1(string[] args) {
-            int RUN_DEBUG = 1;
+namespace renamerIdee
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("==============================================");
+            Console.WriteLine("     Ultimate File Renamer (version V2.7)");
+            Console.WriteLine("==============================================\n");
 
-            if (RUN_DEBUG == 1) {
-                Console.WriteLine("Run All Tests");
-                Console.WriteLine("ToDo: Tests with real files in directories...");
-                //runTests(); 
-                Console.ReadKey();
-                return;
+            string currentFolder = null;
+
+            while (true)
+            {
+                if (string.IsNullOrEmpty(currentFolder))
+                    currentFolder = UserInterface.AskFolder();
+
+                if (currentFolder == null) break;
+
+                UserInterface.ShowFiles(currentFolder);
+
+                var oldPattern = UserInterface.AskOldPattern();
+                var newPattern = UserInterface.AskNewPattern();
+
+                FileRenamer.RenameFilesInFolder(currentFolder, oldPattern, newPattern);
+
+                var option = UserInterface.AskOption();
+
+                if (option == "E") break;
+                if (option == "C") currentFolder = null; // Change folder
+                // if option is R → keep same folder, just loop again
             }
 
-            if (RUN_DEBUG == 2) {
-                Console.WriteLine("Run Matcher Main Method");
-                //Matcher.Main1(null);
-                Console.ReadKey();
-                return;
-            }
-
-
-            //
-            //run real renamer 
-            //
-            //...
-            Console.WriteLine("ToDo: running renamer...");
-            Console.ReadKey();
+            Console.WriteLine("\n👋 Goodbye!");
         }
     }
 }
