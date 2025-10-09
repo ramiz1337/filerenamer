@@ -157,7 +157,6 @@ Dann die EXE im `bin/Debug/net6.0/`-Ordner ausführen.
 
 **Ultimate File Renamer V2.7**  
 Entwickelt mit ❤️ in C#  
-Erstellt von [Deinem Namen hier eintragen]
 
 ---
 
